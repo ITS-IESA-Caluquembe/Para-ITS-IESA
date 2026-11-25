@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ITS IESA Caluquembe</title>
+<title>ITS IESA Caluquembe - V2</title>
 <style>
 body{font-family:sans-serif;background:#0f172a;color:white;margin:0;padding:15px}
-h1{text-align:center;color:#facc15} .card{background:#1e293b;padding:15px;border-radius:12px;margin:10px 0}
-input,select{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:0}
-button{background:#22c55e;color:white;border:0;padding:12px;width:100%;border-radius:8px;font-weight:bold;margin-top:5px}
-.item{background:white;color:black;padding:10px;border-radius:8px;margin:5px 0;display:flex;justify-content:space-between}
-.top{display:flex;gap:10px;text-align:center}.top div{flex:1;background:#1e293b;padding:10px;border-radius:10px}
+h1{text-align:center;color:#facc15;font-size:24px}
+.card{background:white;color:black;border-radius:12px;padding:15px;margin:12px 0}
+input,select{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font-size:16px}
+button{background:#22c55e;color:white;border:none;padding:12px;border-radius:8px;width:100%;font-size:16px;font-weight:bold}
+button.del{background:#ef4444;margin-top:5px;padding:8px}
+.item{background:#f1f5f9;padding:10px;border-radius:8px;margin:8px 0;color:black}
+.top{display:flex;gap:10px;text-align:center}
+.top>div{flex:1;background:white;color:black;border-radius:12px;padding:10px}
+.search{background:#facc15;color:black;font-weight:bold}
+h2{margin:5px 0}
 </style></head><body>
 <h1>🎓 ITS IESA<br>Caluquembe</h1>
-<div class="top"><div><h2 id="tA">0</h2>Alunos</div><div><h2 id="tP">0</h2>Professores</div><div><h2 id="tT">0</h2>Turmas</div></div>
+<div class="top"><div><h2 id="tA">0</h2>Alunos</div><div><h2 id="tP">0</h2>Professores</div></div>
+
+<div class="card"><h3>🔍 Pesquisar</h3>
+<input id="pesquisa" placeholder="Escreve nome, turma ou curso..." oninput="mostrar()">
+</div>
 
 <div class="card"><h3>➕ Adicionar Aluno</h3>
 <input id="nomeA" placeholder="Nome do aluno">
@@ -28,15 +37,21 @@ button{background:#22c55e;color:white;border:0;padding:12px;width:100%;border-ra
 <script>
 let alunos=JSON.parse(localStorage.getItem('alunos')||'[]');
 let profs=JSON.parse(localStorage.getItem('profs')||'[]');
-function show(){
+function salvar(){localStorage.setItem('alunos',JSON.stringify(alunos));localStorage.setItem('profs',JSON.stringify(profs));mostrar();}
+function addAluno(){let n=nomeA.value.trim(),t=turmaA.value.trim(),c=cursoA.value.trim();if(!n)return alert('Escreve o nome');alunos.push({n,t,c});nomeA.value='';turmaA.value='';cursoA.value='';salvar();}
+function addProf(){let n=nomeP.value.trim(),d=discP.value.trim();if(!n)return alert('Escreve o nome');profs.push({n,d});nomeP.value='';discP.value='';salvar();}
+function delA(i){if(confirm('Apagar aluno?')){alunos.splice(i,1);salvar();}}
+function delP(i){if(confirm('Apagar professor?')){profs.splice(i,1);salvar();}}
+function mostrar(){
+let q=(pesquisa.value||'').toLowerCase();
 document.getElementById('tA').innerText=alunos.length;
 document.getElementById('tP').innerText=profs.length;
-document.getElementById('listaA').innerHTML=alunos.map((a,i)=>`<div class="item"><span><b>${a.nome}</b><br>${a.turma} - ${a.curso}</span><span onclick="delA(${i})">❌</span></div>`).join('');
-document.getElementById('listaP').innerHTML=profs.map((p,i)=>`<div class="item"><span><b>${p.nome}</b><br>${p.disc}</span><span onclick="delP(${i})">❌</span></div>`).join('');
+listaA.innerHTML=alunos.map((a,i)=>{
+if(q && !(a.n+' '+a.t+' '+a.c).toLowerCase().includes(q)) return '';
+return `<div class="item"><b>${a.n}</b><br>Turma: ${a.t} | Curso: ${a.c}<button class="del" onclick="delA(${i})">Apagar</button></div>`}).join('')||'<p>Nenhum aluno</p>';
+listaP.innerHTML=profs.map((p,i)=>{
+if(q && !(p.n+' '+p.d).toLowerCase().includes(q)) return '';
+return `<div class="item"><b>${p.n}</b><br>Disciplina: ${p.d}<button class="del" onclick="delP(${i})">Apagar</button></div>`}).join('')||'<p>Nenhum professor</p>';
 }
-function addAluno(){let n=nomeA.value,t=turmaA.value,c=cursoA.value;if(!n)return alert('Escreve o nome');alunos.push({nome:n,turma:t,curso:c});localStorage.setItem('alunos',JSON.stringify(alunos));nomeA.value='';turmaA.value='';cursoA.value='';show()}
-function addProf(){let n=nomeP.value,d=discP.value;if(!n)return alert('Escreve o nome');profs.push({nome:n,disc:d});localStorage.setItem('profs',JSON.stringify(profs));nomeP.value='';discP.value='';show()}
-function delA(i){alunos.splice(i,1);localStorage.setItem('alunos',JSON.stringify(alunos));show()}
-function delP(i){profs.splice(i,1);localStorage.setItem('profs',JSON.stringify(profs));show()}
-show();
+mostrar();
 </script></body></html>
